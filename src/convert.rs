@@ -4,6 +4,9 @@ use crate::{Adapter, DefaultModel, Model, NullAdapter, Result};
 #[cfg(not(target_arch = "wasm32"))]
 use crate::FileAdapter;
 
+#[cfg(all(feature = "runtime-tokio", target_arch = "wasm32", ))]
+use crate::WasmAdapter;
+
 use async_trait::async_trait;
 use rhai::{serde::to_dynamic, Dynamic};
 use serde::Serialize;
@@ -60,9 +63,15 @@ impl TryIntoAdapter for &'static str {
             Ok(Box::new(FileAdapter::new(self)))
         }
 
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(all(not(feature = "runtime-tokio"), target_arch = "wasm32"))]
         {
             Ok(Box::new(NullAdapter))
+        }
+
+        #[cfg(all(feature = "runtime-tokio", target_arch = "wasm32", ))]
+        {
+            let adapter = WasmAdapter::parse_from_str_csv(self).await?;
+            Ok(Box::new(adapter))
         }
     }
 }
