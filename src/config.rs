@@ -13,12 +13,18 @@ use async_std::{
 use async_std::{fs::File as file, path::Path as ioPath};
 
 #[cfg(feature = "runtime-tokio")]
-use std::{io::Cursor as ioCursor, path::Path as ioPath};
+use std::io::Cursor as ioCursor;
+#[cfg(all(feature = "runtime-tokio", not(target_arch = "wasm32")))]
+use std::path::Path as ioPath;
+
 #[cfg(feature = "runtime-tokio")]
 use tokio::io::{
-    AsyncBufReadExt, AsyncReadExt, BufReader as ioBufReader, Error as ioError,
+    AsyncBufReadExt, BufReader as ioBufReader, Error as ioError,
     ErrorKind as ioErrorKind,
 };
+
+#[cfg(all(feature = "runtime-tokio", not(target_arch = "wasm32")))]
+use tokio::io::AsyncReadExt;
 
 #[cfg(all(feature = "runtime-tokio", not(target_arch = "wasm32")))]
 use tokio::fs::File as file;

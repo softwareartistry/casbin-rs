@@ -5,10 +5,16 @@ pub mod file_adapter;
 pub mod memory_adapter;
 pub mod null_adapter;
 
+#[cfg(all(feature = "runtime-tokio", target_arch = "wasm32", ))]
+pub mod wasm_inmemory_adapter;
+
 #[cfg(not(target_arch = "wasm32"))]
 pub use file_adapter::FileAdapter;
 pub use memory_adapter::MemoryAdapter;
 pub use null_adapter::NullAdapter;
+
+#[cfg(all(feature = "runtime-tokio", target_arch = "wasm32", ))]
+pub use wasm_inmemory_adapter::WasmAdapter;
 
 use crate::{model::Model, Result};
 

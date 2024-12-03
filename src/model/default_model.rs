@@ -16,7 +16,7 @@ use parking_lot::RwLock;
 #[cfg(all(feature = "runtime-async-std", not(target_arch = "wasm32")))]
 use async_std::path::Path as ioPath;
 
-#[cfg(feature = "runtime-tokio")]
+#[cfg(all(feature = "runtime-tokio", not(target_arch = "wasm32")))]
 use std::path::Path as ioPath;
 
 use std::{collections::HashMap, sync::Arc};
