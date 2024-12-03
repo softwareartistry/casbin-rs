@@ -32,6 +32,10 @@ pub trait CoreApi: Send + Sync {
     ) -> Result<Self>
     where
         Self: Sized;
+    #[cfg(all(feature = "runtime-tokio", target_arch = "wasm32",))]
+    fn sync_new<M: TryIntoModel, A: TryIntoAdapter>(m: M, a: A) -> Result<Self>
+    where
+        Self: Sized;
     fn add_function(&mut self, fname: &str, f: OperatorFunction);
     fn get_model(&self) -> &dyn Model;
     fn get_mut_model(&mut self) -> &mut dyn Model;

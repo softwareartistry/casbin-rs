@@ -25,6 +25,9 @@ use crate::logger::Logger;
 #[cfg(feature = "explain")]
 use crate::{error::ModelError, get_or_err};
 
+#[cfg(all(feature = "runtime-tokio", target_arch = "wasm32",))]
+use tokio::runtime::Builder;
+
 use async_trait::async_trait;
 use parking_lot::RwLock;
 use rhai::Dynamic;
@@ -120,6 +123,22 @@ impl CoreApi for CachedEnforcer {
         let mut cached_enforcer = Self::new_raw(m, a).await?;
         cached_enforcer.load_policy().await?;
         Ok(cached_enforcer)
+    }
+
+    #[inline]
+    #[cfg(all(feature = "runtime-tokio", target_arch = "wasm32",))]
+    fn sync_new<M: TryIntoModel, A: TryIntoAdapter>(
+        m: M,
+        a: A,
+    ) -> Result<Self> {
+        let tokio_runtime =
+            Builder::new_current_thread().enable_all().build()?;
+
+        tokio_runtime.block_on(async {
+            let mut cached_enforcer = Self::new_raw(m, a).await?;
+            cached_enforcer.load_policy().await?;
+            Ok(cached_enforcer)
+        })
     }
 
     #[inline]

@@ -7,7 +7,7 @@ pub use crate::{
 #[cfg(not(target_arch = "wasm32"))]
 pub use crate::FileAdapter;
 
-#[cfg(all(feature = "runtime-tokio", target_arch = "wasm32", ))]
+#[cfg(all(feature = "runtime-tokio", target_arch = "wasm32",))]
 pub use crate::WasmAdapter;
 
 #[cfg(feature = "cached")]

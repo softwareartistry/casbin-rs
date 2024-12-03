@@ -35,6 +35,9 @@ use rhai::{
     Dynamic, Engine, EvalAltResult, ImmutableString, Scope,
 };
 
+#[cfg(all(feature = "runtime-tokio", target_arch = "wasm32",))]
+use tokio::runtime::Builder;
+
 def_package! {
     pub CasbinPackage(lib) {
         ArithmeticPackage::init(lib);
@@ -439,6 +442,26 @@ impl CoreApi for Enforcer {
             e.load_policy().await?;
         }
         Ok(e)
+    }
+
+    #[inline]
+    #[cfg(all(feature = "runtime-tokio", target_arch = "wasm32",))]
+    fn sync_new<M: TryIntoModel, A: TryIntoAdapter>(
+        m: M,
+        a: A,
+    ) -> Result<Self> {
+        let tokio_runtime =
+            Builder::new_current_thread().enable_all().build()?;
+
+        tokio_runtime.block_on(async {
+            let mut e = Self::new_raw(m, a).await?;
+
+            // Do not initialize the full policy when using a filtered adapter
+            if !e.adapter.is_filtered() {
+                e.load_policy().await?;
+            }
+            Ok(e)
+        })
     }
 
     #[inline]
